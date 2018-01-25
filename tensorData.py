@@ -39,6 +39,10 @@ class tensor:
 		# not sure what this thing does, optional parameter assignment
 		# in initialization?
 		self.niftyList = niftyList
+		self.idx_spatial = idx_spatial
+		self.idx_temporal = idx_temporal
+
+	#------ getters & setters -------#
 
 	# getter and setter for niftylist
 	@property
@@ -48,6 +52,32 @@ class tensor:
 	def niftyList(self, smoothImg):
 		# check that input is nifty image
 		if isinstance(smoothImg, nibabel.nifti1.Nifti1Image):
-			self._niftylist.append(smoothImg)
+			# check that is 4d
+			if len(smoothImg.get_data().shape) == 4:
+				self._niftylist.append(smoothImg)
+			else:
+				raise ValueError("Shape of nifty must be 4d")
 		else:
 			raise TypeError("Must be a nifty type object")
+
+	# getter and setter for idx_spatial
+	@property
+	def idx_spatial(self):
+		return self._idx_spatial
+	@idx_spatial.setter
+	def idx_spatial(self, values):
+		# check that we have a list
+		if isinstance(values, list):
+			# check that length is 2
+			if len(values) == 2:
+				# should check next position
+				if(isinstance(values[0], int)):
+					self._idx_spatial = values
+				else: 
+					raise TypeError("list must contain integer")
+			else:
+				raise ValueError("list must be of length 2")
+		else:
+			raise TypeError("Must be of list type")
+
+	#-----------------------------------#
