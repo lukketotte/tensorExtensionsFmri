@@ -10,6 +10,7 @@ import numpy as np            # highly uncertain if necessary
 from nilearn import image     # nifty 
 import tensorflow as tf       # store as tensors
 import nibabel                # input validation
+import tensorly as tly        # has operations
 
 class tensor:
 	""" Restrucutre list of nilearn imgs to 3-way tensor
@@ -21,7 +22,7 @@ class tensor:
 	Parameters
 	----------
 	niftyList: list[smooth_img]
-		list (or tuple?) of a smooth_img for each subject
+		list (or tuple?) of tensor variables
 
 	idx_spatial: list[int]
 		specifies the indecies in the tuple from calling
@@ -53,8 +54,14 @@ class tensor:
 		# check that input is nifty image
 		if isinstance(smoothImg, nibabel.nifti1.Nifti1Image):
 			# check that is 4d
-			if len(smoothImg.get_data().shape) == 4:
-				self._niftylist.append(smoothImg)
+			shape_img = smoothImg.get_data().shape
+			if len(shape_img) == 4:
+				# instanciate a TF tensor of the same shape as the smooth img
+				# tensor = tf.get_variable("tensor_fMRI", smoothImg.get_data().shape)
+				# number of elements in the tensor
+				dim = shape_img[0] * shape_img[1] * shape_img[2] * shape_img[3]
+				X = tl.tensor(np.zeros(dim).reshape([shape_img]))
+				self._niftylist.append(X)
 			else:
 				raise ValueError("Shape of nifty must be 4d")
 		else:
@@ -80,4 +87,24 @@ class tensor:
 		else:
 			raise TypeError("Must be of list type")
 
+	@property
+	def idx_temporal(self):
+		return self._idx_temporal
+	@idx_temporal.setter
+	def idx_temporal(self, value):
+		if isinstance(value, int) and value > 0:
+			self._idx_temporal = value
+		else:
+			raise TypeError("Must be positive integer")
+
 	#-----------------------------------#
+
+	# Matrix operations to unfold in the tensor to reduce the dimensions
+	# some applications folds in the 4d fMRI tensor to a 2d matrix with 
+	# a spatial and a temporal dimension. The 3d is then subjects
+
+	# following Kolda et. al 2009
+
+	# folding the tensor to 2d should result in a 783728 x 176 matrix
+	# tensorly works but takes numpy array (ndarray?) as argument
+
