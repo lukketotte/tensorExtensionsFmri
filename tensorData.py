@@ -8,9 +8,9 @@ my master thesis.
 
 import numpy as np            # highly uncertain if necessary
 from nilearn import image     # nifty 
-import tensorflow as tf       # store as tensors
+#import tensorflow as tf      # store as tensors
 import nibabel                # input validation
-import tensorly as tl        # has operations
+import tensorly as tl         # has operations
 
 class tensor:
 	""" Restrucutre list of nilearn imgs to 3-way tensor
@@ -142,10 +142,10 @@ class tensor:
 			for i in range(0,(subj_dim-1)):
 				# temp_nifty = tl.unfold(self.niftyList[i], self.idx_temporal)
 				# seems like you have to make it to a tl.tensor rather than ndarray
+				# this code is extremely ineffecient, lots of casting
 				X[:,:,i] = tl.unfold(tl.tensor(self.niftyList[i]), self.idx_temporal)
 		else:
 			raise TypeError("No niftys has been entered")
-
 		return X
 
 
