@@ -61,6 +61,7 @@ class tensor:
 				# number of elements in the tensor
 				dim = shape_img[0] * shape_img[1] * shape_img[2] * shape_img[3]
 				X = tl.tensor(np.zeros(dim).reshape([shape_img]))
+				X = shape_img.get_data()
 				self._niftylist.append(X)
 			else:
 				raise ValueError("Shape of nifty must be 4d")
@@ -75,8 +76,8 @@ class tensor:
 	def idx_spatial(self, values):
 		# check that we have a list
 		if isinstance(values, list):
-			# check that length is 2
-			if len(values) == 2:
+			# check that length is 3, fmri is 4d
+			if len(values) == 3:
 				# should check next position
 				if(isinstance(values[0], int)):
 					self._idx_spatial = values
@@ -101,10 +102,43 @@ class tensor:
 
 	# Matrix operations to unfold in the tensor to reduce the dimensions
 	# some applications folds in the 4d fMRI tensor to a 2d matrix with 
-	# a spatial and a temporal dimension. The 3d is then subjects
+	# a spatial and a temporal dimension. Stacking together these unfolded
+	# tensors results in a 3d tensor with the 3-d mode being subjects in the
+	# study
 
 	# following Kolda et. al 2009
+	"""
+		This function takes no parameters
+		it will be called to take the excisting 
+		information in the class and create
+		the 3d tensor out of the list of tensors
+	"""
+	def unfoldTemporal(self):
+		# return object will be a 3d tensor
+		# of dim: R^(Temp x (prod_spat) x Sub)
+		# should have some rough input validation
+		# TODO: create function that checks that all niftys 
+		#       in the niftyList are of equal dimensions
+		if self.niftyList != None:
+			shape_tensor = self.niftyList[0].get_data().shape
+			spat_dim = self.niftyList[0] * self.niftyList[1] * self.niftyList[2]
+			temp_dim = self.niftyList[3]
+			subj_dim = len(niftyList)
+			# create a (temp, spat, subj) tensor to hold the result
+			X = tl.tensor(np.zeros(temp_dim * spat_dim * subj_dim * subj_dim).reshape(temp_dim, spat_dim, subj_dim))
+			# loop through the list of niftys, fold to temp_dim x spat_dim matricies
+			# and add to the tensor. Folding is done on the temporal mode, leading
+			# to the temporal fibers being the rows, with each column containing 
+			# the spatial information
+			temp_nifty = tl.tensor(np.zeros(temp_dim * spat_dim).reshape(temp_dim, spat_dim))
+			# loop through the subjects
+			for i in range(0,(subj_dim-1)):
+				temp_nifty = tl.unfold(self.niftyList[i], self.idx_temporal)
+				X[:,:,i] = temp_nifty
+		else:
+			raise TypeError("No niftys has been entered")
 
-	# folding the tensor to 2d should result in a 783728 x 176 matrix
-	# tensorly works but takes numpy array (ndarray?) as argument
+		return X
+
+
 
