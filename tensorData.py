@@ -52,8 +52,8 @@ class tensor:
 		return self._niftyList
 	@niftyList.setter
 	def niftyList(self, smoothImg):
-		# check that input is nifty image
-		if isinstance(smoothImg[0], nibabel.nifti1.Nifti1Image):
+		# check that input is nifty image fransformed to numpday.ndarray
+		if isinstance(smoothImg[0], numpy.ndarray):
 			# check that is 4d
 			shape_img = smoothImg[0].get_data().shape
 			if len(shape_img) == 4:
@@ -65,7 +65,7 @@ class tensor:
 				for i in range(0,(len(smoothImg) - 1)):
 					# this doesn't get returned as a np object
 					X = smoothImg[i].get_data()
-					self._niftyList.append(X)
+					self.niftyList.append(X)
 			else:
 				raise ValueError("Shape of nifty must be 4d")
 		else:
@@ -123,21 +123,26 @@ class tensor:
 		# TODO: create function that checks that all niftys 
 		#       in the niftyList are of equal dimensions
 		if self.niftyList != None:
-			shape_tensor = self.niftyList[0].get_data().shape
-			spat_dim = self.niftyList[0] * self.niftyList[1] * self.niftyList[2]
-			temp_dim = self.niftyList[3]
-			subj_dim = len(niftyList)
+			shape_tensor = self.niftyList[0].shape
+			# set up the dimensions of the return object
+			spat_dim = shape_tensor[0] * shape_tensor[1] * shape_tensor[2]
+			temp_dim = shape_tensor[3]
+			# no of subjects
+			subj_dim = len(self.niftyList)
 			# create a (temp, spat, subj) tensor to hold the result
-			X = tl.tensor(np.zeros(temp_dim * spat_dim * subj_dim * subj_dim).reshape(temp_dim, spat_dim, subj_dim))
+			X = tl.tensor(np.zeros(temp_dim * spat_dim * subj_dim).reshape(temp_dim, spat_dim, subj_dim))
 			# loop through the list of niftys, fold to temp_dim x spat_dim matricies
 			# and add to the tensor. Folding is done on the temporal mode, leading
 			# to the temporal fibers being the rows, with each column containing 
 			# the spatial information
-			temp_nifty = tl.tensor(np.zeros(temp_dim * spat_dim).reshape(temp_dim, spat_dim))
+			
+			#temp_nifty = tl.tensor(np.zeros(temp_dim * spat_dim).reshape(temp_dim, spat_dim))
+			
 			# loop through the subjects
 			for i in range(0,(subj_dim-1)):
-				temp_nifty = tl.unfold(self.niftyList[i], self.idx_temporal)
-				X[:,:,i] = temp_nifty
+				# temp_nifty = tl.unfold(self.niftyList[i], self.idx_temporal)
+				# seems like you have to make it to a tl.tensor rather than ndarray
+				X[:,:,i] = tl.unfold(tl.tensor(self.niftyList[i]), self.idx_temporal)
 		else:
 			raise TypeError("No niftys has been entered")
 
