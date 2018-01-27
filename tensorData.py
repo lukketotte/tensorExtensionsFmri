@@ -151,5 +151,24 @@ class tensor:
 			# <mxnet.ndarray.ndarray.NDarray>
 		return tl.to_numpy(X)
 
+	# TODO: create a function that efficiently calculate the spatial means
+	# of the unfolded tensor. For now it takes parameter subject
+	# which subsets the third dimension of the tensor
+	def spatialMean(self, subjectTensor, subject):
+		tens_dim = subjectTensor.shape
+		if(len(tens_dim) == 3):
+			# return object
+			ret = np.array(tens_dim[0])
+			# this is going to be rough...
+			for i in range(tens_dim[0]):
+				col_sum = 0
+				for i in range(tens_dem[1]):
+					col_sum += subjectTensor[i, :, subject]
+				# mean of i'th spatial dimension
+				ret[i] = col_sum/tens_dim[1]
+			return ret
+		else:
+			raise TypeError("Wrong shape of tensor")
+
 
 

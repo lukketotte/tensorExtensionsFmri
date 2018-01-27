@@ -52,5 +52,16 @@ a = tensor_cube[:, 100500, 0]
 # this is a problem... to much casting. Not sure what is happening
 print(type(a))
 #print(type(t))
-plt.plot(t,a)
-plt.show()
+#plt.plot(t,a)
+#plt.show()
+
+# going to test spatialMean function and check time
+xt = np.array(range(0,176))
+
+from datetime import datetime
+startTime = datetime.now()
+
+xt = tdTest.spatialMean(tensor_cube, 0)
+print(datetime.now() - startTime)
+plot(t, xt)
+plot.show()
