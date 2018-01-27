@@ -12,20 +12,32 @@ import tensorly as tl
 
 from tensorData import tensor as td
 # ----------- ADD DATA ----------- #
-adhdData = datasets.fetch_adhd(n_subjects = 2)
+adhdData = datasets.fetch_adhd(n_subjects = 4)
 # list of 4D nifti file locations for each subject
 funcFilenames = adhdData.func
 
 img1 = smooth_img(funcFilenames[0], fwhm = "fast")
 img2 = smooth_img(funcFilenames[1], fwhm = "fast")
+img3 = smooth_img(funcFilenames[2], fwhm = "fast")
+img4 = smooth_img(funcFilenames[3], fwhm = "fast")
 
-x = tl.tensor(np.zeros(61*73*61*176).reshape(61,73,61,176))
-y = tl.tensor(np.zeros(61*73*61*176).reshape(61,73,61,176))
+# x = tl.tensor(np.zeros(61*73*61*176).reshape(61,73,61,176))
+# y = tl.tensor(np.zeros(61*73*61*176).reshape(61,73,61,176))
 x = img1.get_data()
 y = img2.get_data()
+z = img3.get_data()
+# w does not have the correct temporal dimension
+w = img4.get_data()
+#print(y.shape) # (61,73,61,176)
+#print(x.shape) # (61,73,61,176)
+#print(z.shape) # (61,73,61,176)
+#print(w.shape) # (61,73,61,175)
+
 
 # ------------- INSTANCE OF tensorData ------------- #
-tdTest = td([x, y], [0,1,2], 3)
+# w & y has no data?
+# ERROR: every even position has no data
+tdTest = td([z, x, y], [0,1,2], 3)
 a = tdTest.niftyList
 # this is fine
 print(type(a[0]))
@@ -33,7 +45,8 @@ print(type(a[0]))
 # print(a[0][1,1,1,:])
 # print(tdTest.idx_spatial)
 tensor_cube = tdTest.unfoldTemporal()
-# print(tensor_cube.shape)
+#271633, the dimensions are correct
+print(tensor_cube.shape)
 
 # ----------- CHECK THE DATA ---------- #
 t = np.array(range(0,176))
@@ -56,12 +69,23 @@ print(type(a))
 #plt.show()
 
 # going to test spatialMean function and check time
-xt = np.array(range(0,176))
+xt = np.array(range(0,175))
 
 from datetime import datetime
 startTime = datetime.now()
 
+# first subject
 xt = tdTest.spatialMean(tensor_cube, 0)
 print(datetime.now() - startTime)
-plot(t, xt)
-plot.show()
+
+# second subject has no data
+yt = np.array(range(0,175))
+yt = tdTest.spatialMean(tensor_cube, 1)
+# this thing gives an indexing error
+# IndexError: index 2 is out of bounds for axis 2 with size 2
+wt = tdTest.spatialMean(tensor_cube, 2)
+# same here, no data?
+# wt = tdTest.spatialMean(tensor_cube, 3)
+# print(yt)
+plt.plot(t, xt, "r", t, yt,"b", t, wt, "g")
+plt.show()

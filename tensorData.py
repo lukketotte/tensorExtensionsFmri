@@ -130,7 +130,7 @@ class tensor:
 			# no of subjects
 			subj_dim = len(self.niftyList)
 			# create a (temp, spat, subj) tensor to hold the result
-			X = tl.tensor(np.zeros(temp_dim * spat_dim * subj_dim).reshape(temp_dim, spat_dim, subj_dim))
+			X = tl.tensor(np.zeros(temp_dim * spat_dim * (subj_dim-1)).reshape(temp_dim, spat_dim, subj_dim-1))
 			# loop through the list of niftys, fold to temp_dim x spat_dim matricies
 			# and add to the tensor. Folding is done on the temporal mode, leading
 			# to the temporal fibers being the rows, with each column containing 
@@ -139,7 +139,7 @@ class tensor:
 			#temp_nifty = tl.tensor(np.zeros(temp_dim * spat_dim).reshape(temp_dim, spat_dim))
 			
 			# loop through the subjects
-			for i in range(0,(subj_dim-1)):
+			for i in range(subj_dim-1):
 				# temp_nifty = tl.unfold(self.niftyList[i], self.idx_temporal)
 				# seems like you have to make it to a tl.tensor rather than ndarray
 				# this code is extremely ineffecient, lots of casting
@@ -158,12 +158,12 @@ class tensor:
 		tens_dim = subjectTensor.shape
 		if(len(tens_dim) == 3):
 			# return object
-			ret = np.array(tens_dim[0])
+			ret = np.array(range(tens_dim[0]))
 			# this is going to be rough...
 			for i in range(tens_dim[0]):
 				col_sum = 0
-				for i in range(tens_dem[1]):
-					col_sum += subjectTensor[i, :, subject]
+				for j in range(tens_dim[1]):
+					col_sum += subjectTensor[i, j, subject]
 				# mean of i'th spatial dimension
 				ret[i] = col_sum/tens_dim[1]
 			return ret
