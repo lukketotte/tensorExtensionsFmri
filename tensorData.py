@@ -146,7 +146,10 @@ class tensor:
 				X[:,:,i] = tl.unfold(tl.tensor(self.niftyList[i]), self.idx_temporal)
 		else:
 			raise TypeError("No niftys has been entered")
-		return X
+			# this is not very effective, but seems to be what is working
+			# otherwise when slicing you get some really weird casting
+			# <mxnet.ndarray.ndarray.NDarray>
+		return tl.to_numpy(X)
 
 
 

@@ -27,6 +27,8 @@ y = img2.get_data()
 # ------------- INSTANCE OF tensorData ------------- #
 tdTest = td([x, y], [0,1,2], 3)
 a = tdTest.niftyList
+# this is fine
+print(type(a[0]))
 # print(type(a[1]))
 # print(a[0][1,1,1,:])
 # print(tdTest.idx_spatial)
@@ -46,9 +48,9 @@ for i in range(100500, 101000):
 		print("Found value: col %d" % i)
 		break
 
-a = np.ndarray(tensor_cube[:, 100500, 0]).reshape(176,1)
-print(len(a.shape))
+a = tensor_cube[:, 100500, 0]
+# this is a problem... to much casting. Not sure what is happening
 print(type(a))
-print(type(t))
+#print(type(t))
 plt.plot(t,a)
 plt.show()
