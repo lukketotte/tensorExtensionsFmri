@@ -130,7 +130,7 @@ class tensor:
 			# no of subjects
 			subj_dim = len(self.niftyList)
 			# create a (temp, spat, subj) tensor to hold the result
-			X = tl.tensor(np.zeros(temp_dim * spat_dim * (subj_dim-1)).reshape(temp_dim, spat_dim, subj_dim-1))
+			X = tl.tensor(np.zeros(temp_dim * spat_dim * (subj_dim)).reshape(temp_dim, spat_dim, subj_dim))
 			# loop through the list of niftys, fold to temp_dim x spat_dim matricies
 			# and add to the tensor. Folding is done on the temporal mode, leading
 			# to the temporal fibers being the rows, with each column containing 
@@ -139,7 +139,9 @@ class tensor:
 			#temp_nifty = tl.tensor(np.zeros(temp_dim * spat_dim).reshape(temp_dim, spat_dim))
 			
 			# loop through the subjects
-			for i in range(subj_dim-1):
+			# TODO: is this line causing problems? 
+			#       Should it be subj_dim or (subj_dim-1)
+			for i in range(subj_dim):
 				# temp_nifty = tl.unfold(self.niftyList[i], self.idx_temporal)
 				# seems like you have to make it to a tl.tensor rather than ndarray
 				# this code is extremely ineffecient, lots of casting
@@ -169,6 +171,3 @@ class tensor:
 			return ret
 		else:
 			raise TypeError("Wrong shape of tensor")
-
-
-
