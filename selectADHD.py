@@ -6,6 +6,7 @@ Will return string of location for IDs
 import pandas as pd 	# for reading the csv with suppl data 
 import os 				# for creating paths
 import re 				# for removing [] in the numpy array
+import numpy as np 		# transforming the pandas column to array
 
 
 class adhd:
@@ -27,7 +28,7 @@ class adhd:
 		number of subjects to return the folder location for
 	"""
 
-	def __init__(self, csvLoc = None, niftyLocation = None,
+	def __init__(self, csvLocation = None, niftyLocation = None,
 		         site = None, numbSubjects = None):
 		self._csvLocation = csvLocation
 		self._niftyLocation = niftyLocation
@@ -61,23 +62,32 @@ class adhd:
 	def site(self):
 		return self._site
 	@site.setter
-	def site(self, siteInt)
+	def site(self, siteInt):
 		if isinstance(siteInt, int):
 			self._site = siteInt
 		else:
 			raise TypeError("Must be int")
 
 	@property
-	def numbSubjects(self)
+	def numbSubjects(self):
 		return self._numbSubjects
 	@numbSubjects.setter
-	def numbSubjects(self, numbSubInt)
+	def numbSubjects(self, numbSubInt):
 		if isinstance(numbSubInt, int):
 			self._numbSubjects = numbSubInt
 		else:
 			raise TypeError("Must be int")
 
 	# ---------------------------------- #
+	"""
+		Helper function to find whether a file excists
+	"""
+	def _fileExists(self, path):
+		try:
+			st = os.stat(path)
+		except os.error:
+			return False
+		return True
 
 	"""
 		Should return a list of Strings with the 
@@ -85,11 +95,10 @@ class adhd:
 		folder. These should be based on the site
 		requested
 	"""
-
 	def listOfLocations(self):
 		# check that the paths are correctly specified...
-		if(fileExists(niftyLocation)):
-			if(fileExists(csvLocation)):
+		if(self._fileExists(self._niftyLocation)):
+			if(self._fileExists(self._csvLocation)):
 				# begin by reading the csv
 				supplementaryData = pd.read_csv(self._csvLocation)
 				# subset to the site (where the data has been gathered)
@@ -101,28 +110,28 @@ class adhd:
 				# loop through the vector and check whether the user id 
 				# exists in the data repository
 				subjectList = []
-				for i in range(len(vec)):
-					# need to make the numpy value to int and just using str()
-					# carries through the square brackets. If subject ID exists in
-					# the data repository it is appended to the subjectList
-					tempLoc = os.path.join(niftyLocation, 
-						                   re.sub("[\[\]]", "", np.array_str(vec[i])))
-					if(fileExists(tempLoc)):
+				# store the stopping conditions for the loop as a dictionary
+				stopDict = {'foundNumbOfSubjects': False , 'iter' : 0}
+				# loop should stop as soon as any of these conditions has
+				# been met
+				while(stopDict['foundNumbOfSubjects'] != False or stopDict['iter'] < len(vec)):
+					# get an error that suggests we are doing vec[51],
+					# not sure how?
+					tempLoc = os.path.join(self._niftyLocation, 
+						                   re.sub("[\[\]]", "", np.array_str(vec[stopDict['iter']])))
+					# print(tempLoc)
+					if(self._fileExists(tempLoc)):
 						subjectList.append(tempLoc)
+						# update dictionary if we have found the specified number of
+						# subjects
+						if(len(subjectList) == self._numbSubjects):
+							stopDict["foundNumbOfSubjects"] = True
+					# update iter in dictionary
+					stopDict['iter'] += 1
 				return subjectList
-				# ...if not, raise an error
 			else:
 				raise FileNotFoundError("Path for csv not found")
 		else: 
 			raise FileNotFoundError("Path for niftyLocation not found")
 
-	"""
-		Helper function to find whether a file excists
-	"""
-	def fileExists(path):
-		try:
-			st = os.stat(path)
-		except os.error:
-			return False
-		return True
 

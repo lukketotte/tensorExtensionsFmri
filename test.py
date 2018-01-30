@@ -11,6 +11,7 @@ import tensorflow as tf
 import tensorly as tl
 
 from tensorData import tensor as td
+from selectADHD import adhd as adhd
 # ----------- ADD DATA ----------- #
 adhdData = datasets.fetch_adhd(n_subjects = 30)
 # list of 4D nifti file locations for each subject
@@ -41,6 +42,14 @@ print(w.shape) # (61,73,61,175)
 # are adhering to slightly different protocols and 
 # have differing equipment
 
+# ---------- INSTANCE of selectADHD ---------- #
+csv_loc = "C:\\Users\\lukas\\Documents\\master\\Thesis\\Python"
+csv_loc = os.path.join(csv_loc, "allSubs_testSet_phenotypic_dx.csv")
+nifty_loc = "D:\\MasterThesis\\Data\\adhd\\data"
+# create the instance
+adhdTest = adhd(csv_loc, nifty_loc,1,5)
+print(adhdTest.listOfLocations())
+
 # ------------- INSTANCE OF tensorData ------------- #
 # w & y has no data?
 # ERROR: every even position has no data
@@ -55,6 +64,7 @@ tensor_cube = tdTest.unfoldTemporal()
 #271633, the dimensions are correct
 print(tensor_cube.shape)
 
+"""
 
 # ----------- CHECK THE DATA ---------- #
 t = np.array(range(0,176))
@@ -96,3 +106,5 @@ wt = tdTest.spatialMean(tensor_cube, 2)
 # print(yt)
 plt.plot(t, xt, "r", t, wt,"b", t, yt, "g")
 plt.show()
+
+"""
