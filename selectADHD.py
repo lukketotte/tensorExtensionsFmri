@@ -80,16 +80,6 @@ class adhd:
 
 	# ---------------------------------- #
 	"""
-		Helper function to find whether a file excists
-	"""
-	def _fileExists(self, path):
-		try:
-			st = os.stat(path)
-		except os.error:
-			return False
-		return True
-
-	"""
 		Should return a list of Strings with the 
 		locations of valid repositories in the data
 		folder. These should be based on the site
@@ -115,10 +105,13 @@ class adhd:
 				# loop should stop as soon as any of these conditions has
 				# been met
 				while(stopDict['foundNumbOfSubjects'] != False or stopDict['iter'] < len(vec)):
-					# get an error that suggests we are doing vec[51],
-					# not sure how?
-					tempLoc = os.path.join(self._niftyLocation, 
-						                   re.sub("[\[\]]", "", np.array_str(vec[stopDict['iter']])))
+					# all the files are of the structure
+					# ID_rest_tshift_RPI_voreg_mni.nii
+					file = re.sub("[\[\]]", "", np.array_str(vec[stopDict['iter']]))
+					if(len(file)) < 7:
+						file = self._fileNameUpdater(file)
+					tempLoc = os.path.join(self._niftyLocation, file, 
+						file + "_rest_tshift_RPI_voreg_mni.nii")
 					# print(tempLoc)
 					if(self._fileExists(tempLoc)):
 						subjectList.append(tempLoc)
@@ -133,5 +126,27 @@ class adhd:
 				raise FileNotFoundError("Path for csv not found")
 		else: 
 			raise FileNotFoundError("Path for niftyLocation not found")
+
+	"""
+		Helper function to find whether a file excists
+	"""
+	def _fileExists(self, path):
+		try:
+			st = os.stat(path)
+		except os.error:
+			return False
+		return True
+
+	"""
+		Helper function to makes sure that ID's which are not
+		length 7 have 0's added in the beginning until this condition is met
+	"""
+	def _fileNameUpdater(self, name):
+		# how many values are missing for the name to be length 7
+		diff = 7 - len(name)
+		for i in range(diff):
+			# just paste zeroes until its length 7
+			name = "0" + name
+		return name
 
 

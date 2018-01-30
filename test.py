@@ -13,47 +13,36 @@ import tensorly as tl
 from tensorData import tensor as td
 from selectADHD import adhd as adhd
 # ----------- ADD DATA ----------- #
-adhdData = datasets.fetch_adhd(n_subjects = 30)
-# list of 4D nifti file locations for each subject
-funcFilenames = adhdData.func
-
-print(funcFilenames[0])
-
-img1 = smooth_img(funcFilenames[0], fwhm = "fast")
-img2 = smooth_img(funcFilenames[1], fwhm = "fast")
-img3 = smooth_img(funcFilenames[2], fwhm = "fast")
-img4 = smooth_img(funcFilenames[7], fwhm = "fast")
-
-# x = tl.tensor(np.zeros(61*73*61*176).reshape(61,73,61,176))
-# y = tl.tensor(np.zeros(61*73*61*176).reshape(61,73,61,176))
-x = img1.get_data()
-y = img2.get_data()
-z = img3.get_data()
-w = img4.get_data()
-#print(y.shape) # (61,73,61,176)
-#print(x.shape) # (61,73,61,176)
-#print(z.shape) # (61,73,61,176)
-print(w.shape) # (61,73,61,175)
-# many observations have different shapes
-# not sure what to do about that. That seems 
-# to imply that the procedure for subject is
-# not the same as for the others. Check the extra
-# CSV with site information. Perhaps that the sites
-# are adhering to slightly different protocols and 
-# have differing equipment
+# TODO: fetch more data as you get home 
+# adhdData = datasets.fetch_adhd(n_subjects = 30)
 
 # ---------- INSTANCE of selectADHD ---------- #
 csv_loc = "C:\\Users\\lukas\\Documents\\master\\Thesis\\Python"
 csv_loc = os.path.join(csv_loc, "allSubs_testSet_phenotypic_dx.csv")
 nifty_loc = "D:\\MasterThesis\\Data\\adhd\\data"
-# create the instance
-adhdTest = adhd(csv_loc, nifty_loc,1,5)
-print(adhdTest.listOfLocations())
+
+# get list of locations for up to 5 subjects for site 1 in folder
+# nifty_loc
+adhdTest = adhd(csv_loc, nifty_loc, 4, 5)
+funcFilenames = adhdTest.listOfLocations()
+print(funcFilenames)
+
+# get the data from the locations and append to list img
+
+img = []
+for i in range(len(funcFilenames)):
+	x = smooth_img(funcFilenames[i], fwhm = "fast").get_data()
+	# still not sure about the shapes within sites
+	print(x.shape)
+	img.append(x)
+
+
+
 
 # ------------- INSTANCE OF tensorData ------------- #
 # w & y has no data?
 # ERROR: every even position has no data
-tdTest = td([z, x, y], [0,1,2], 3)
+tdTest = td(img, [0,1,2], 3)
 a = tdTest.niftyList
 # this is fine
 print(type(a[0]))
