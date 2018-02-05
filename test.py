@@ -14,7 +14,9 @@ from tensorData import tensor as td
 from selectADHD import adhd as adhd
 # ----------- ADD DATA ----------- #
 # TODO: fetch more data as you get home 
-# adhdData = datasets.fetch_adhd(n_subjects = 30)
+adhdData = datasets.fetch_adhd(n_subjects = 40)
+func_filenames = adhdData.func
+print(func_filenames[0])
 
 # ---------- INSTANCE of selectADHD ---------- #
 csv_loc = "C:\\Users\\lukas\\Documents\\master\\Thesis\\Python"
@@ -23,20 +25,19 @@ nifty_loc = "D:\\MasterThesis\\Data\\adhd\\data"
 
 # get list of locations for up to 5 subjects for site 1 in folder
 # nifty_loc
-adhdTest = adhd(csv_loc, nifty_loc, 4, 5)
+adhdTest = adhd(csv_loc, nifty_loc, 6, 5)
 funcFilenames = adhdTest.listOfLocations()
 print(funcFilenames)
 
 # get the data from the locations and append to list img
+# this code goes very very slow for some reason
 
 img = []
 for i in range(len(funcFilenames)):
-	x = smooth_img(funcFilenames[i], fwhm = "fast").get_data()
+ 	x = smooth_img(funcFilenames[i], fwhm = "fast").get_data()
 	# still not sure about the shapes within sites
-	print(x.shape)
-	img.append(x)
-
-
+ 	print(x.shape)
+ 	img.append(x)
 
 
 # ------------- INSTANCE OF tensorData ------------- #
@@ -44,6 +45,7 @@ for i in range(len(funcFilenames)):
 # ERROR: every even position has no data
 tdTest = td(img, [0,1,2], 3)
 a = tdTest.niftyList
+print(len(a))
 # this is fine
 print(type(a[0]))
 # print(type(a[1]))
@@ -52,6 +54,9 @@ print(type(a[0]))
 tensor_cube = tdTest.unfoldTemporal()
 #271633, the dimensions are correct
 print(tensor_cube.shape)
+print(type(tensor_cube))
+
+
 
 """
 

@@ -33,15 +33,23 @@ class tensor:
 		specifies the indecies in the tuple from calling
 		get_data().shape on a nilearn image of the temporal
 		dimensions
+
+	changeDimension: boolean
+		specifies how to deal with differing temporal dimensions that
+		seems to be a problem(?) in the adhd dataset. If set to True,
+		which is the default, it will reshape all subject tensors to 
+		match the subject with lowest 4th dimension
 	"""
 
 	def __init__(self, niftyList = [],
-		         idx_spatial = None, idx_temporal = None):
+		         idx_spatial = None, idx_temporal = None,
+		         changeDimension = True):
 		# not sure what this thing does, optional parameter assignment
 		# in initialization?
 		self._niftyList = niftyList
 		self._idx_spatial = idx_spatial
 		self._idx_temporal = idx_temporal
+		self._changeDimension = changeDimension
 
 	#------ getters & setters -------#
 
@@ -62,10 +70,24 @@ class tensor:
 				# number of elements in the tensor
 				dim = shape_img[0] * shape_img[1] * shape_img[2] * shape_img[3]
 				X = tl.tensor(np.zeros(dim).reshape(shape_img[0], shape_img[1], shape_img[2], shape_img[3]))
+				# this list will be used to check whether any wrangling needs to be done
+				listTemporalDim = []
 				for i in range(0,(len(smoothImg) - 1)):
 					# this doesn't get returned as a np object
 					X = smoothImg[i].get_data()
+					# append the "numpy-fied" nifty data
+					# X = tl.to_numpy(X)
 					self.niftyList.append(X)
+					# append 4th value in shape tuple to listTemporalDim
+					listTemporalDim.append(X.shape[3])
+				# check if the temporal dimensions are equal over the subjects
+				# if not so, then they need to be altered somehow. How that is
+				# done will have to depend on changeDimension parameter. 
+				if (not self.checkEqual(listTemporalDim)) and self._changeDimension:
+					# TODO helper function that determines the smallest value
+					# in listTemporalDim and then removes the extra slices from
+					# the other subjects
+					self.reshapeSubjectTensor(listTemporalDim)
 			else:
 				raise ValueError("Shape of nifty must be 4d")
 		else:
@@ -100,6 +122,39 @@ class tensor:
 			self._idx_temporal = value
 		else:
 			raise TypeError("Must be positive integer")
+
+	#-----------------------------------#
+
+	# Functions for manipulating the niftys to make
+	# them mergable into the spatial x temporal x subject
+	# tensors
+
+	"""
+		Helper function for reading in the niftys. 
+		Evaluates whether they have the same temporal
+		dimension.
+
+		checkEqual: evaluates whether the elements of a list
+					is equal
+
+		reshapeSubjectTensor: reshapes the tensor
+
+
+	"""
+	def checkEqual(lst):
+   		return lst[1:] == lst[:-1]
+
+	def reshapeSubjectTensor(self, lst):
+   		# minimum value of lst
+   		minTemp = min(lst)
+   		print(minTemp)
+   		# Then reshape the tensors so all have 
+   		# minTemp temporal slices
+   		for i in range(len(self._niftyList)):
+   			X = tl.to_numpy(self._niftyList[i])
+   			self._niftyList[i] = X[: , : , : , np.arange(minTemp)]
+
+
 
 	#-----------------------------------#
 
